@@ -55,6 +55,13 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
         string title;
         uint256 votingPeriod;
         mapping(address => bool) hasVoted;
+
+        uint256 cancelForVotes;
+        uint256 cancelAgainstVotes;
+        bool cancelActive;
+        uint256 cancelStartTimestamp;
+        uint256 cancelEndTimestamp;
+        mapping(address => bool) hasVotedCancel;
     }
 
     StrategyInfo[] public strategies;
@@ -69,6 +76,9 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
     event ProposalExecuted(uint256 indexed proposalId, address strategy, uint256 amount);
     event ProposalCancelled(uint256 indexed proposalId);
     event EmergencyWithdraw(address indexed admin, uint256 amount);
+    event CancelVoteStarted(uint256 indexed proposalId, uint256 start, uint256 end);
+    event CancelVoted(uint256 indexed proposalId, address voter, bool support, uint256 weight);
+    event ProposalCancelledByVote(uint256 indexed proposalId);
 
     constructor(IERC20 _baseToken) ERC20("Investment Pool Share", "IPS") {
         require(address(_baseToken) != address(0), "zero token");
@@ -312,6 +322,65 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
         emit ProposalExecuted(_proposalId, strategyAddress, proposal.amount);
     }
 
+    function startCancelVoting(uint256 _proposalId, uint256 votingPeriodMinutes) external {
+        Proposal storage p = _proposals[_proposalId];
+
+        require(balanceOf(msg.sender) > 0, "Need shares");
+        require(p.id != 0, "Invalid proposal");
+        require(p.state == ProposalState.Executed, "Not active");
+        require(!p.cancelActive, "Cancel vote already active");
+        require(votingPeriodMinutes > 0, "Invalid period");
+
+        p.cancelActive = true;
+        p.cancelStartTimestamp = block.timestamp;
+        p.cancelEndTimestamp = block.timestamp + votingPeriodMinutes * 1 minutes;
+
+        emit CancelVoteStarted(_proposalId, p.cancelStartTimestamp, p.cancelEndTimestamp);
+    }
+
+    function voteCancel(uint256 _proposalId, bool support) external {
+        Proposal storage p = _proposals[_proposalId];
+
+        require(p.id != 0, "Invalid proposal");
+        require(p.cancelActive, "Cancel voting not active");
+        require(block.timestamp < p.cancelEndTimestamp, "Cancel voting ended");
+        require(!p.hasVotedCancel[msg.sender], "Already voted cancel");
+
+        uint256 weight = balanceOf(msg.sender);
+        require(weight > 0, "No voting power");
+
+        p.hasVotedCancel[msg.sender] = true;
+
+        if (support) {
+            p.cancelForVotes += weight;
+        } else {
+            p.cancelAgainstVotes += weight;
+        }
+
+        emit CancelVoted(_proposalId, msg.sender, support, weight);
+    }
+
+    function finalizeCancelVote(uint256 _proposalId) external {
+        Proposal storage p = _proposals[_proposalId];
+
+        require(p.id != 0, "Invalid proposal");
+        require(p.cancelActive, "Cancel vote not active");
+        require(block.timestamp > p.cancelEndTimestamp, "Cancel voting not ended");
+
+        uint256 supply = totalSupply();
+        uint256 quorum = supply / 10;
+        if (quorum == 0) {
+            quorum = 1;
+        }
+
+        if (p.cancelForVotes > p.cancelAgainstVotes && p.cancelForVotes >= quorum) {
+            _withdrawFromProposal(_proposalId);
+            emit ProposalCancelledByVote(_proposalId);
+        }
+
+        p.cancelActive = false;
+    }
+
     function cancelProposal(uint256 _proposalId) external onlyRole(ADMIN_ROLE) {
         Proposal storage proposal = _proposals[_proposalId];
         require(proposal.id != 0, "Invalid proposal");
@@ -321,6 +390,11 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
     }
 
     function withdrawFromProposal(uint256 _proposalId) external nonReentrant onlyRole(ADMIN_ROLE) {
+        _withdrawFromProposal(_proposalId);
+        emit ProposalCancelled(_proposalId);
+    }
+
+    function _withdrawFromProposal(uint256 _proposalId) internal {
         Proposal storage proposal = _proposals[_proposalId];
         require(proposal.state == ProposalState.Executed, "Proposal not executed");
 
@@ -337,8 +411,6 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
         IStrategy(strategyAddress).withdraw(amount);
 
         proposal.state = ProposalState.Closed;
-
-        emit ProposalCancelled(_proposalId);
     }
     
     function getProposal(uint256 _proposalId) external view returns (
@@ -369,6 +441,25 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
         state = p.state;
         description = p.description;
         title = p.title;
+    }
+
+    function getProposalCancel(uint256 _proposalId, address _user) external view returns (
+        uint256 cancelForVotes,
+        uint256 cancelAgainstVotes,
+        bool cancelActive,
+        uint256 cancelStartTimestamp,
+        uint256 cancelEndTimestamp,
+        bool votedCancel
+    ) {
+        Proposal storage p = _proposals[_proposalId];
+        require(p.id != 0, "Invalid proposal");
+
+        cancelForVotes = p.cancelForVotes;
+        cancelAgainstVotes = p.cancelAgainstVotes;
+        cancelActive = p.cancelActive;
+        cancelStartTimestamp = p.cancelStartTimestamp;
+        cancelEndTimestamp = p.cancelEndTimestamp;
+        votedCancel = _user != address(0) ? p.hasVotedCancel[_user] : false;
     }
 
     function hasVoted(uint256 _proposalId, address _user) external view returns (bool) {

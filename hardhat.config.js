@@ -7,7 +7,7 @@ module.exports = {
         settings: {
             optimizer: {
                 enabled: true,
-                runs: 2000, // можно увеличить до 10k при необходимости
+                runs: 2000,
             },
         },
     },
