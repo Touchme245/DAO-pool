@@ -32,12 +32,10 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
     }
 
     enum ProposalState {
-        Pending,
         Active,
         Defeated,
         Succeeded,
         Executed,
-        Cancelled,
         Closed
     }
 
@@ -384,8 +382,8 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
     function cancelProposal(uint256 _proposalId) external onlyRole(ADMIN_ROLE) {
         Proposal storage proposal = _proposals[_proposalId];
         require(proposal.id != 0, "Invalid proposal");
-        require(proposal.state == ProposalState.Active || proposal.state == ProposalState.Pending, "Cannot cancel");
-        proposal.state = ProposalState.Cancelled;
+        require(proposal.state == ProposalState.Active, "Cannot cancel");
+        proposal.state = ProposalState.Defeated;
         emit ProposalCancelled(_proposalId);
     }
 

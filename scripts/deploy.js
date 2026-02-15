@@ -8,7 +8,7 @@ async function main() {
         console.warn(
             "You are trying to deploy a contract to the Hardhat Network, which" +
                 "gets automatically created and destroyed every time. Use the Hardhat" +
-                " option '--network localhost'"
+                " option '--network localhost'",
         );
     }
 
@@ -17,6 +17,9 @@ async function main() {
     console.log("Deploying with", await deployer.getAddress());
 
     const Token = await ethers.getContractFactory("Token", deployer);
+    const basePrice = ethers.parseEther("0.1");
+    const slope = ethers.parseEther("0.00018");
+
     const token = await Token.deploy();
     await token.waitForDeployment();
 
@@ -32,9 +35,9 @@ async function main() {
     await strategy.waitForDeployment();
 
     const strategyAddress = await strategy.getAddress();
-    const amount = 1000000;
+    const amount = 10000;
 
-    await token.transfer(strategyAddress, amount);
+    await token.mintForStrategy(strategyAddress, amount);
     console.log("Transfered", amount, "to strategy");
 
     const stratBal = await strategy.getBalance();
@@ -63,7 +66,7 @@ async function saveFrontendFiles(contracts) {
             const address = await contract.getAddress();
             fs.writeFileSync(
                 path.join(contractsDir, "/", name + "-contract-address.json"),
-                JSON.stringify({ [name]: address }, undefined, 2)
+                JSON.stringify({ [name]: address }, undefined, 2),
             );
         }
 
@@ -71,7 +74,7 @@ async function saveFrontendFiles(contracts) {
 
         fs.writeFileSync(
             path.join(contractsDir, "/", name + ".json"),
-            JSON.stringify(ContractArtifact, null, 2)
+            JSON.stringify(ContractArtifact, null, 2),
         );
 
         console.log("Successfully deployed");
