@@ -105,7 +105,6 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
     function deposit(uint256 _amount) external nonReentrant {
         require(_amount > 0, "Nothing to deposit");
         uint256 _totalAssets = totalAssets();
-
         baseToken.safeTransferFrom(msg.sender, address(this), _amount);
 
         uint256 sharesToMint;
@@ -186,9 +185,9 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
         uint256 netAmount = toSend - feeAmount;
 
         deposited[msg.sender] = userDeposit - depositPart;
-        _burn(msg.sender, _shares);
+        _burn(msg.sender, _shares);//
 
-        baseToken.safeTransfer(msg.sender, netAmount);
+        baseToken.safeTransfer(msg.sender, netAmount);//
 
         emit Redeem(msg.sender, _shares, netAmount);
     }
@@ -304,7 +303,7 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
         require(proposal.amount > 0, "Zero amount");
 
         uint256 available = baseToken.balanceOf(address(this));
-        require(available >= proposal.amount, "Insufficient funds");
+        require(available >= proposal.amount * 10 ** 18, "Insufficient funds");
 
         StrategyInfo storage strategy = strategies[proposal.strategyId];
         require(strategy.active, "Strategy not active");
@@ -312,12 +311,13 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
         address strategyAddress = strategy.strategy;
 
         baseToken.approve(strategyAddress, 0);
-        baseToken.safeIncreaseAllowance(strategyAddress, proposal.amount);
-        IStrategy(strategyAddress).deposit(proposal.amount);
+        uint256 amount = proposal.amount * 10 ** 18;
+        baseToken.safeIncreaseAllowance(strategyAddress, amount);
+        IStrategy(strategyAddress).deposit(amount);
         baseToken.approve(strategyAddress, 0);
 
         proposal.state = ProposalState.Executed;
-        emit ProposalExecuted(_proposalId, strategyAddress, proposal.amount);
+        emit ProposalExecuted(_proposalId, strategyAddress, amount);
     }
 
     function startCancelVoting(uint256 _proposalId, uint256 votingPeriodMinutes) external {
@@ -403,7 +403,7 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
         address strategyAddress = strategy.strategy;
         require(strategyAddress != address(0), "Invalid strategy address");
 
-        uint256 amount = proposal.amount;
+        uint256 amount = proposal.amount * 10 ** 18;
         require(amount > 0, "Zero amount");
 
         IStrategy(strategyAddress).withdraw(amount);

@@ -26,7 +26,7 @@ contract BaseStrategy is IStrategy {
     function withdraw(uint256 _amount) external override {
         require(_amount > 0 && _amount <= balance, "Invalid amount");
 
-        uint256 profit = (_amount * 10) / 100;
+        uint256 profit = _amount / 10;
         uint256 toSend = _amount + profit;
 
         balance -= _amount;

@@ -35,7 +35,7 @@ async function main() {
     await strategy.waitForDeployment();
 
     const strategyAddress = await strategy.getAddress();
-    const amount = 10000;
+    const amount = BigInt("10000000000000000000000000");
 
     await token.mintForStrategy(strategyAddress, amount);
     console.log("Transfered", amount, "to strategy");
