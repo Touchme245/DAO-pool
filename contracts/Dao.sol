@@ -13,7 +13,6 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
     using SafeERC20 for IERC20;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant STRATEGIST_ROLE = keccak256("STRATEGIST_ROLE");
 
     IERC20 public immutable baseToken;
     uint256 public totalLockedInStrategies;
@@ -185,9 +184,9 @@ contract InvestmentPool is ERC20, ReentrancyGuard, AccessControl {
         uint256 netAmount = toSend - feeAmount;
 
         deposited[msg.sender] = userDeposit - depositPart;
-        _burn(msg.sender, _shares);//
+        _burn(msg.sender, _shares);
 
-        baseToken.safeTransfer(msg.sender, netAmount);//
+        baseToken.safeTransfer(msg.sender, netAmount);
 
         emit Redeem(msg.sender, _shares, netAmount);
     }

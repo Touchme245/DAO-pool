@@ -18,34 +18,22 @@ export default function usePoolGovernance() {
     const [txStatus, setTxStatus] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
-    /* ------------------------------------------------------------------ */
-    /* Contract init                                                       */
-    /* ------------------------------------------------------------------ */
-
     useEffect(() => {
         if (!signer) return;
 
         const c = new Contract(
             poolAddressJson.InvestmentPool,
             poolAbi.abi,
-            signer
+            signer,
         );
         setContract(c);
     }, [signer]);
-
-    /* ------------------------------------------------------------------ */
-    /* Helpers                                                             */
-    /* ------------------------------------------------------------------ */
 
     const stateIndexToString = (idx) => {
         const map = ["Active", "Defeated", "Succeeded", "Executed", "Closed"];
         const n = typeof idx === "bigint" ? Number(idx) : Number(idx);
         return map[n] ?? `Unknown(${n})`;
     };
-
-    /* ------------------------------------------------------------------ */
-    /* Fetch strategies                                                    */
-    /* ------------------------------------------------------------------ */
 
     const fetchStrategies = useCallback(async () => {
         if (!contract) return;
@@ -73,10 +61,6 @@ export default function usePoolGovernance() {
         }
     }, [contract]);
 
-    /* ------------------------------------------------------------------ */
-    /* Fetch proposals                                                     */
-    /* ------------------------------------------------------------------ */
-
     const fetchProposals = useCallback(async () => {
         if (!contract) return;
 
@@ -90,7 +74,7 @@ export default function usePoolGovernance() {
                 const p = await contract.getProposal(i);
                 const cancel = await contract.getProposalCancel(
                     i,
-                    account || "0x0000000000000000000000000000000000000000"
+                    account || "0x0000000000000000000000000000000000000000",
                 );
 
                 const voted = account
@@ -131,10 +115,6 @@ export default function usePoolGovernance() {
         }
     }, [contract, account]);
 
-    /* ------------------------------------------------------------------ */
-    /* Init load                                                           */
-    /* ------------------------------------------------------------------ */
-
     useEffect(() => {
         if (!contract) return;
 
@@ -142,17 +122,13 @@ export default function usePoolGovernance() {
         fetchProposals();
     }, [contract, fetchStrategies, fetchProposals]);
 
-    /* ------------------------------------------------------------------ */
-    /* Standard actions                                                    */
-    /* ------------------------------------------------------------------ */
-
     const vote = async (id, support) => {
         try {
-            setTxStatus("⏳ Голосование...");
+            setTxStatus("Голосование...");
             const tx = await contract.vote(BigInt(id), support);
             await tx.wait();
             await fetchProposals();
-            setTxStatus("✅ Голос учтён");
+            setTxStatus("Голос учтён");
         } catch (e) {
             console.error(e);
             setErrorMessage("Ошибка голосования");
@@ -161,11 +137,11 @@ export default function usePoolGovernance() {
 
     const finalizeProposal = async (id) => {
         try {
-            setTxStatus("⏳ Завершение голосования...");
+            setTxStatus("Завершение голосования...");
             const tx = await contract.finalizeProposal(BigInt(id));
             await tx.wait();
             await fetchProposals();
-            setTxStatus("✅ Голосование завершено");
+            setTxStatus("Голосование завершено");
         } catch (e) {
             console.error(e);
             setErrorMessage("Ошибка финализации");
@@ -174,12 +150,12 @@ export default function usePoolGovernance() {
 
     const executeProposal = async (id) => {
         try {
-            setTxStatus("⏳ Исполнение предложения...");
+            setTxStatus("Исполнение предложения...");
             const tx = await contract.executeProposal(BigInt(id));
             await tx.wait();
             await fetchProposals();
             await fetchStrategies();
-            setTxStatus("✅ Предложение исполнено");
+            setTxStatus("Предложение исполнено");
         } catch (e) {
             console.error(e);
             setErrorMessage("Ошибка исполнения");
@@ -188,32 +164,28 @@ export default function usePoolGovernance() {
 
     const withdrawFromProposal = async (id) => {
         try {
-            setTxStatus("⏳ Вывод средств...");
+            setTxStatus("Вывод средств...");
             const tx = await contract.withdrawFromProposal(BigInt(id));
             await tx.wait();
             await fetchProposals();
             await fetchStrategies();
-            setTxStatus("✅ Средства выведены");
+            setTxStatus("Средства выведены");
         } catch (e) {
             console.error(e);
             setErrorMessage("Ошибка вывода");
         }
     };
 
-    /* ------------------------------------------------------------------ */
-    /* Cancel voting actions                                               */
-    /* ------------------------------------------------------------------ */
-
     const startCancelVoting = async (id, votingPeriod) => {
         try {
-            setTxStatus("⏳ Запуск голосования за отмену...");
+            setTxStatus("Запуск голосования за отмену...");
             const tx = await contract.startCancelVoting(
                 BigInt(id),
-                BigInt(votingPeriod)
+                BigInt(votingPeriod),
             );
             await tx.wait();
             await fetchProposals();
-            setTxStatus("✅ Голосование за отмену начато");
+            setTxStatus("Голосование за отмену начато");
         } catch (e) {
             console.error(e);
             setErrorMessage("Ошибка запуска отмены");
@@ -222,11 +194,11 @@ export default function usePoolGovernance() {
 
     const voteCancel = async (id, support) => {
         try {
-            setTxStatus("⏳ Голосование за отмену...");
+            setTxStatus("Голосование за отмену...");
             const tx = await contract.voteCancel(BigInt(id), support);
             await tx.wait();
             await fetchProposals();
-            setTxStatus("✅ Голос учтён");
+            setTxStatus("Голос учтён");
         } catch (e) {
             console.error(e);
             setErrorMessage("Ошибка голосования за отмену");
@@ -235,12 +207,12 @@ export default function usePoolGovernance() {
 
     const finalizeCancelVote = async (id) => {
         try {
-            setTxStatus("⏳ Завершение голосования за отмену...");
+            setTxStatus("Завершение голосования за отмену...");
             const tx = await contract.finalizeCancelVote(BigInt(id));
             await tx.wait();
             await fetchProposals();
             await fetchStrategies();
-            setTxStatus("✅ Голосование за отмену завершено");
+            setTxStatus("Голосование за отмену завершено");
         } catch (e) {
             console.error(e);
             setErrorMessage("Ошибка финализации отмены");
@@ -252,7 +224,7 @@ export default function usePoolGovernance() {
         amount,
         votingPeriod,
         title,
-        description
+        description,
     ) => {
         if (!contract) {
             setErrorMessage("Контракт не загружен");
@@ -260,9 +232,8 @@ export default function usePoolGovernance() {
         }
 
         try {
-            setTxStatus("⏳ Создание предложения...");
+            setTxStatus("Создание предложения...");
 
-            // Преобразуем числа в BigInt
             const strategyIdBn = BigInt(strategyId);
             const amountBn = BigInt(amount);
             const votingPeriodBn = BigInt(votingPeriod);
@@ -272,21 +243,17 @@ export default function usePoolGovernance() {
                 amountBn,
                 votingPeriodBn,
                 title,
-                description
+                description,
             );
             await tx.wait();
 
             await fetchProposals();
-            setTxStatus("✅ Предложение создано");
+            setTxStatus("Предложение создано");
         } catch (e) {
             console.error(e);
             setErrorMessage("Ошибка создания предложения");
         }
     };
-
-    /* ------------------------------------------------------------------ */
-    /* Exposed API                                                         */
-    /* ------------------------------------------------------------------ */
 
     return {
         proposals,

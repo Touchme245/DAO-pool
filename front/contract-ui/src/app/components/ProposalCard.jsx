@@ -20,7 +20,7 @@ export default function ProposalCard({ proposal }) {
 
             <div className="mt-3 flex justify-between items-center text-sm text-gray-400">
                 <div>
-                    👍 {proposal.forVotes} | 👎 {proposal.againstVotes}
+                    {proposal.forVotes} | {proposal.againstVotes}
                 </div>
 
                 <Link

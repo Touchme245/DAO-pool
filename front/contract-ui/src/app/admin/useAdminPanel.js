@@ -13,12 +13,11 @@ export default function useAdminPanel() {
     const [withdrawalFee, setWithdrawalFee] = useState("0");
     const [feeCollected, setFeeCollected] = useState("0");
 
-    const [roles, setRoles] = useState({ isAdmin: false, isStrategist: false });
+    const [roles, setRoles] = useState({ isAdmin: false });
     const [loading, setLoading] = useState(false);
     const [txStatus, setTxStatus] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
-    // Инициализация контракта
     useEffect(() => {
         if (!signer) return;
         const c = new Contract(
@@ -29,20 +28,17 @@ export default function useAdminPanel() {
         setContract(c);
     }, [signer]);
 
-    // Проверка ролей
     useEffect(() => {
         const checkRoles = async () => {
             if (!contract || !account) return;
             try {
                 const ADMIN_ROLE = await contract.ADMIN_ROLE();
-                const STRATEGIST_ROLE = await contract.STRATEGIST_ROLE();
 
-                const [isAdmin, isStrategist] = await Promise.all([
+                const [isAdmin] = await Promise.all([
                     contract.hasRole(ADMIN_ROLE, account),
-                    contract.hasRole(STRATEGIST_ROLE, account),
                 ]);
 
-                setRoles({ isAdmin, isStrategist });
+                setRoles({ isAdmin });
             } catch (err) {
                 console.error("Failed to fetch roles:", err);
             }
@@ -70,7 +66,6 @@ export default function useAdminPanel() {
         }
     };
 
-    // Установка комиссии
     const setWithdrawalFeePercent = async (percent) => {
         if (!contract) return;
         try {
@@ -86,7 +81,6 @@ export default function useAdminPanel() {
         }
     };
 
-    // Вывод комиссий
     const withdrawCollectedFees = async (amount) => {
         if (!contract) return;
         try {
@@ -105,7 +99,6 @@ export default function useAdminPanel() {
         }
     };
 
-    // Автообновление при загрузке или изменении контракта
     useEffect(() => {
         if (contract) fetchData();
     }, [contract]);

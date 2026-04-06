@@ -10,7 +10,6 @@ export default function Header() {
 
     return (
         <header className="w-full flex justify-between items-center py-6 px-6 md:px-12 bg-purpleDark/10 backdrop-blur-sm shadow-none">
-            {/* Логотип */}
             <Link
                 href="/"
                 className="text-2xl md:text-3xl font-bold text-purpleLight flex items-center hover:text-purpleLight/80 transition-colors duration-200"
@@ -18,7 +17,6 @@ export default function Header() {
                 <FiDatabase className="mr-2" /> Dao Invest
             </Link>
 
-            {/* Подключение кошелька / аккаунт */}
             {!account ? (
                 <button
                     onClick={connectWallet}

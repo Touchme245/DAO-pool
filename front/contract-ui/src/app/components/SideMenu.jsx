@@ -30,7 +30,6 @@ export default function SideMenu() {
     const linkStyle =
         "flex items-center justify-between px-5 py-4 rounded-xl bg-purpleDark/30 hover:bg-purple/50 text-purple-100 font-medium transition duration-200 group";
 
-    // Проверка роли админа
     useEffect(() => {
         const checkAdmin = async () => {
             if (!signer || !account) return;
@@ -56,7 +55,6 @@ export default function SideMenu() {
 
     return (
         <>
-            {/* Бургер */}
             {!open && (
                 <button
                     onClick={toggleMenu}
@@ -66,7 +64,6 @@ export default function SideMenu() {
                 </button>
             )}
 
-            {/* Затемнение */}
             {open && (
                 <div
                     onClick={toggleMenu}
@@ -74,12 +71,10 @@ export default function SideMenu() {
                 />
             )}
 
-            {/* Панель */}
             <aside
                 className={`fixed top-0 left-0 h-full w-80 bg-gradient-to-b from-purpleDark via-purpleDark/95 to-black shadow-2xl z-50 transform transition-transform duration-300
                 ${open ? "translate-x-0" : "-translate-x-full"}`}
             >
-                {/* Header панели */}
                 <div className="flex items-center justify-between p-6 border-b border-purpleLight/20">
                     <h2 className="text-xl font-bold text-purpleLight">
                         Навигация
@@ -93,7 +88,6 @@ export default function SideMenu() {
                     </button>
                 </div>
 
-                {/* Ссылки */}
                 <div className="flex flex-col space-y-4 p-6">
                     {account && (
                         <>
@@ -145,7 +139,6 @@ export default function SideMenu() {
                                 <FiArrowRight />
                             </Link>
 
-                            {/* Только для админа */}
                             {isAdmin && (
                                 <Link
                                     href="/admin"

@@ -19,7 +19,6 @@ export default function useToken() {
     const [reserve, setReserve] = useState(null);
     const [txStatus, setTxStatus] = useState("");
 
-    // --- Инициализация контракта ---
     useEffect(() => {
         if (!signer) {
             setContract(null);
@@ -34,7 +33,6 @@ export default function useToken() {
         setContract(tokenContract);
     }, [signer]);
 
-    // --- Загрузка данных с контракта ---
     const loadData = async () => {
         if (!contract || !account) return;
 
@@ -66,12 +64,10 @@ export default function useToken() {
         }
     };
 
-    // --- Автообновление данных при изменении контракта или аккаунта ---
     useEffect(() => {
         loadData();
     }, [contract, account]);
 
-    // --- BUY ---
     const buy = async (ethAmount) => {
         if (!contract || !ethAmount) return;
 
@@ -89,7 +85,6 @@ export default function useToken() {
         }
     };
 
-    // --- SELL ---
     const sell = async (tokenAmount) => {
         if (!contract || !tokenAmount) return;
 

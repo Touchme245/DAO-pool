@@ -32,7 +32,7 @@ export const WalletProvider = ({ children }) => {
             });
             if (networkVersion !== HARDHAT_NETWORK_ID) {
                 alert(
-                    `Please connect to Hardhat network (chainId ${HARDHAT_NETWORK_ID})`
+                    `Please connect to Hardhat network (chainId ${HARDHAT_NETWORK_ID})`,
                 );
                 return;
             }
@@ -46,7 +46,6 @@ export const WalletProvider = ({ children }) => {
         }
     };
 
-    // Подписка на смену аккаунта
     useEffect(() => {
         if (!window.ethereum) return;
 
@@ -72,13 +71,12 @@ export const WalletProvider = ({ children }) => {
         return () => {
             window.ethereum.removeListener(
                 "accountsChanged",
-                handleAccountsChanged
+                handleAccountsChanged,
             );
             window.ethereum.removeListener("chainChanged", handleChainChanged);
         };
     }, [provider]);
 
-    // Восстановление из localStorage
     useEffect(() => {
         const init = async () => {
             const storedAccount = localStorage.getItem("walletAccount");
@@ -89,7 +87,7 @@ export const WalletProvider = ({ children }) => {
                 const accounts = await newProvider.listAccounts();
                 if (accounts.includes(storedAccount)) {
                     const newSigner = await newProvider.getSigner(
-                        storedAccount
+                        storedAccount,
                     );
                     setProvider(newProvider);
                     setSigner(newSigner);

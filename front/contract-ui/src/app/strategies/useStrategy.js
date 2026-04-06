@@ -24,7 +24,7 @@ export default function useStrategy() {
         const contract = new Contract(
             poolAddressJson.InvestmentPool,
             poolAbi.abi,
-            signer
+            signer,
         );
         setPoolContract(contract);
     }, [signer]);
@@ -62,7 +62,7 @@ export default function useStrategy() {
                     active: s[1],
                     balance: s[2].toString(),
                     name: s[3],
-                    description: s[4], // <- новое поле
+                    description: s[4],
                 });
             }
 
@@ -79,7 +79,7 @@ export default function useStrategy() {
             setTxStatus("Добавление стратегии...");
             const tx = await poolContract.addStrategy(
                 strategyAddress,
-                description
+                description,
             );
             await tx.wait();
             setTxStatus("Стратегия успешно добавлена!");

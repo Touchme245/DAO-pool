@@ -55,7 +55,6 @@ const steps = [
 export default function HomeView({ account }) {
     return (
         <Layout>
-            {/* HERO */}
             <section className="flex flex-col items-center text-center mt-20 px-6 gap-8">
                 <h1 className="text-5xl md:text-6xl font-bold text-purpleLight flex items-center gap-3">
                     <FiDatabase />
@@ -85,7 +84,6 @@ export default function HomeView({ account }) {
                 )}
             </section>
 
-            {/* FEATURES */}
             <section className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-10 px-6">
                 {features.map((feature) => (
                     <div
@@ -103,7 +101,6 @@ export default function HomeView({ account }) {
                 ))}
             </section>
 
-            {/* HOW IT WORKS */}
             <section className="mt-28 px-6">
                 <h2 className="text-4xl font-bold text-center text-purpleLight mb-14">
                     Как это работает
@@ -127,7 +124,6 @@ export default function HomeView({ account }) {
                 </div>
             </section>
 
-            {/* CTA */}
             <section className="mt-32 mb-20 flex flex-col items-center text-center gap-6">
                 <h2 className="text-4xl font-bold text-purpleLight">
                     Присоединяйтесь к DAO
